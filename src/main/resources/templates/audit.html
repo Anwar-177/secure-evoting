@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: page('Public Ledger', ~{::main})}">
+<body>
+<main class="container">
+    <div class="page-head">
+        <div>
+            <h1>Public blockchain ledger</h1>
+            <p>Anyone can audit the election. Votes are encrypted and voters are anonymous, but every block is open for verification.</p>
+        </div>
+        <span class="badge" th:classappend="${report.valid} ? 'badge-valid' : 'badge-invalid'"
+              th:text="${report.valid} ? 'Chain valid' : 'Chain tampered'">Valid</span>
+    </div>
+
+    <div class="card" style="margin-bottom:18px">
+        <div class="card-body">
+            <form th:action="@{/audit}" method="get" style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end">
+                <div style="flex:1;min-width:260px">
+                    <label class="label" for="tx">Verify a transaction</label>
+                    <input type="search" id="tx" name="tx" th:value="${tx}" placeholder="Paste the transaction ID from your vote receipt" maxlength="64">
+                </div>
+                <button class="btn btn-primary" type="submit">Verify</button>
+            </form>
+
+            <div th:if="${tx != null}" style="margin-top:18px">
+                <div class="alert alert-error" style="margin:0" th:if="${found == null}">
+                    No block with this transaction ID exists on the ledger.
+                </div>
+                <div th:if="${found != null}">
+                    <div class="alert" style="margin-bottom:14px" th:classappend="${found.valid()} ? 'alert-success' : 'alert-error'"
+                         th:text="${found.valid()} ? 'Transaction found. The block is intact and correctly linked to the chain.' : 'Transaction found, but the block failed validation: ' + ${found.problem()}"></div>
+                    <dl class="kv">
+                        <dt>Block number</dt><dd th:text="'#' + ${found.block.blockIndex}">#1</dd>
+                        <dt>Recorded at</dt><dd th:text="${#temporals.format(found.block.time, 'dd MMM yyyy, HH:mm:ss')}">time</dd>
+                        <dt>Election</dt><dd th:text="${found.block.genesis} ? 'Genesis block' : (${electionTitles[found.block.electionId]} ?: 'Election')">Election</dd>
+                        <dt>Block hash</dt><dd><code class="hash" th:text="${found.block.blockHash}">hash</code></dd>
+                        <dt>Previous hash</dt><dd><code class="hash" th:text="${found.block.previousHash}">hash</code></dd>
+                        <dt>Anonymous voter token</dt><dd><code class="hash" th:text="${found.block.voterToken} ?: '—'">token</code></dd>
+                        <dt>Nonce</dt><dd th:text="${found.block.nonce}">0</dd>
+                    </dl>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-head">
+            <h2>All blocks</h2>
+            <span class="muted small" th:text="${report.checks.size()} + ' blocks'">0 blocks</span>
+        </div>
+        <div th:replace="~{fragments :: ledger(${report}, ${electionTitles}, false)}"></div>
+    </div>
+</main>
+</body>
+</html>

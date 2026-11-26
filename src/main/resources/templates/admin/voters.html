@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: page('Voters', ~{::main})}">
+<body>
+<main class="container">
+    <div class="page-head">
+        <div>
+            <h1>Registered voters</h1>
+            <p>Verify each registration against the captured face photo, then approve or reject it.</p>
+        </div>
+        <div class="page-actions">
+            <span class="badge badge-pending" th:if="${pendingCount > 0}" th:text="${pendingCount} + ' pending'">0 pending</span>
+        </div>
+    </div>
+    <div th:replace="~{fragments :: alerts}"></div>
+
+    <div class="card">
+        <div class="empty" th:if="${voters.isEmpty()}">No voters have registered yet.</div>
+        <div class="table-wrap" th:unless="${voters.isEmpty()}">
+            <table>
+                <thead>
+                <tr><th>Voter</th><th>Voter ID</th><th>Contact</th><th>Aadhaar</th><th>Biometrics</th><th>Registered</th><th>Status</th><th></th></tr>
+                </thead>
+                <tbody>
+                <tr th:each="v : ${voters}">
+                    <td>
+                        <div class="person">
+                            <img class="avatar avatar-lg" th:if="${v.faceImage}" th:src="${v.faceImage}" th:alt="'Face photo of ' + ${v.fullName}">
+                            <div>
+                                <strong th:text="${v.fullName}">Name</strong>
+                                <div class="muted small" th:text="'DOB ' + ${#temporals.format(v.dateOfBirth, 'dd MMM yyyy')}"></div>
+                            </div>
+                        </div>
+                    </td>
+                    <td><code class="hash" th:text="${v.voterCode}">VTR</code></td>
+                    <td class="small"><span th:text="${v.email}"></span><br><span class="muted" th:text="${v.phone}"></span></td>
+                    <td class="small" th:text="'XXXX XXXX ' + ${#strings.substring(v.nationalId, 8)}"></td>
+                    <td class="small">Face<span th:if="${v.fingerprintRegistered}"> + Fingerprint</span></td>
+                    <td class="small" style="white-space:nowrap" th:text="${#temporals.format(v.registeredAt, 'dd MMM yyyy')}"></td>
+                    <td><span class="badge" th:classappend="'badge-' + ${v.status.name().toLowerCase()}" th:text="${v.status}">PENDING</span></td>
+                    <td>
+                        <div class="cell-actions">
+                            <form th:if="${!v.approved}" th:action="@{/admin/voters/{id}/approve(id=${v.id})}" method="post">
+                                <button class="btn btn-success btn-sm" type="submit">Approve</button>
+                            </form>
+                            <form th:if="${v.status.name() != 'REJECTED'}" th:action="@{/admin/voters/{id}/reject(id=${v.id})}" method="post"
+                                  onsubmit="return confirm('Reject this voter? They will not be able to vote.');">
+                                <button class="btn btn-outline-danger btn-sm" type="submit">Reject</button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</main>
+</body>
+</html>

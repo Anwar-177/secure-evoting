@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: page('My Dashboard', ~{::main})}">
+<body>
+<main class="container">
+    <div class="page-head">
+        <div class="person">
+            <img class="avatar avatar-lg" th:if="${voter.faceImage}" th:src="${voter.faceImage}" alt="Your registered face photo">
+            <div>
+                <h1 th:text="'Welcome, ' + ${voter.fullName}">Welcome</h1>
+                <p>Voter ID <code class="hash" th:text="${voter.voterCode}">VTR</code>
+                    &middot; <span class="badge" th:classappend="'badge-' + ${voter.status.name().toLowerCase()}" th:text="${voter.status}">PENDING</span></p>
+            </div>
+        </div>
+    </div>
+    <div th:replace="~{fragments :: alerts}"></div>
+
+    <div class="alert alert-warning" th:if="${voter.status.name() == 'PENDING'}">
+        Your registration is waiting for verification by the election authority. You can vote once it is approved.
+    </div>
+    <div class="alert alert-error" th:if="${voter.status.name() == 'REJECTED'}">
+        Your registration was rejected by the election authority. You are not eligible to vote.
+    </div>
+
+    <section>
+        <h2 style="margin-bottom:14px">Active elections</h2>
+        <div class="card empty" th:if="${active.isEmpty()}">There is no active election right now.</div>
+        <div class="grid grid-2">
+            <div class="card" th:each="v : ${active}">
+                <div class="card-body">
+                    <span class="badge badge-active">Voting open</span>
+                    <h3 style="margin:10px 0 6px;font-size:1.1rem" th:text="${v.election.title}">Election</h3>
+                    <p class="muted" th:text="${v.election.description}"></p>
+                </div>
+                <div class="card-foot">
+                    <a class="btn btn-primary" th:if="${!v.voted and voter.approved}" th:href="@{/voter/ballot/{id}(id=${v.election.id})}">Verify identity and vote</a>
+                    <span class="muted" th:if="${!v.voted and !voter.approved}">Available after your registration is approved</span>
+                    <span th:if="${v.voted}">
+                        <span class="badge badge-approved">You have voted</span>
+                        <a class="btn btn-secondary btn-sm" style="margin-left:8px" th:href="@{/voter/receipt/{id}(id=${v.election.id})}">View receipt</a>
+                    </span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="section" th:if="${!past.isEmpty()}">
+        <h2>Past elections</h2>
+        <div class="card">
+            <div class="table-wrap">
+                <table>
+                    <thead><tr><th>Election</th><th>Status</th><th>Your vote</th><th></th></tr></thead>
+                    <tbody>
+                    <tr th:each="v : ${past}">
+                        <td><strong th:text="${v.election.title}">Title</strong></td>
+                        <td>
+                            <span class="badge badge-published" th:if="${v.election.published}">Result published</span>
+                            <span class="badge badge-closed" th:unless="${v.election.published}">Counting in progress</span>
+                        </td>
+                        <td th:text="${v.voted} ? 'Recorded' : 'Did not vote'"></td>
+                        <td>
+                            <div class="cell-actions">
+                                <a class="btn btn-secondary btn-sm" th:if="${v.voted}" th:href="@{/voter/receipt/{id}(id=${v.election.id})}">Receipt</a>
+                                <a class="btn btn-primary btn-sm" th:if="${v.election.published}" th:href="@{/results/{id}(id=${v.election.id})}">View result</a>
+                            </div>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+</main>
+</body>
+</html>

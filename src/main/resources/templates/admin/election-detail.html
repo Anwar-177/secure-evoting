@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: page(${election.title}, ~{::main})}">
+<body>
+<main class="container">
+    <div class="breadcrumb"><a th:href="@{/admin/elections}">Elections</a> / <span th:text="${election.title}">Title</span></div>
+    <div class="page-head">
+        <div>
+            <h1>
+                <span th:text="${election.title}">Title</span>
+                <span class="badge" style="vertical-align:middle" th:classappend="'badge-' + ${election.status.name().toLowerCase()}" th:text="${election.status}">DRAFT</span>
+            </h1>
+            <p th:if="${election.description}" th:text="${election.description}"></p>
+        </div>
+        <div class="page-actions">
+            <form th:if="${election.draft}" th:action="@{/admin/elections/{id}/start(id=${election.id})}" method="post"
+                  onsubmit="return confirm('Start this election? Candidates cannot be changed after voting opens.');">
+                <button class="btn btn-success" type="submit">Start election</button>
+            </form>
+            <form th:if="${election.draft}" th:action="@{/admin/elections/{id}/delete(id=${election.id})}" method="post"
+                  onsubmit="return confirm('Delete this draft election and its candidates?');">
+                <button class="btn btn-outline-danger" type="submit">Delete draft</button>
+            </form>
+            <form th:if="${election.active}" th:action="@{/admin/elections/{id}/stop(id=${election.id})}" method="post"
+                  onsubmit="return confirm('Stop this election? Voting will close and cannot be reopened.');">
+                <button class="btn btn-danger" type="submit">Stop election</button>
+            </form>
+            <a class="btn btn-secondary" th:if="${election.published}" th:href="@{/results/{id}(id=${election.id})}">View public result</a>
+        </div>
+    </div>
+    <div th:replace="~{fragments :: alerts}"></div>
+
+    <ol class="steps" style="margin-bottom:18px">
+        <li th:classappend="${election.draft} ? 'current' : 'done'">1. Setup<small>Add candidates</small></li>
+        <li th:classappend="${election.active} ? 'current' : (${election.draft} ? '' : 'done')">2. Voting open
+            <small th:text="${election.startedAt != null} ? ${#temporals.format(election.startedAt, 'dd MMM yyyy, HH:mm')} : 'Not started'"></small></li>
+        <li th:classappend="${election.closed} ? 'current' : (${election.published} ? 'done' : '')">3. Voting closed
+            <small th:text="${election.endedAt != null} ? ${#temporals.format(election.endedAt, 'dd MMM yyyy, HH:mm')} : 'Verify and count'"></small></li>
+        <li th:classappend="${election.published} ? 'done'">4. Result published
+            <small th:text="${election.publishedAt != null} ? ${#temporals.format(election.publishedAt, 'dd MMM yyyy, HH:mm')} : 'Pending'"></small></li>
+    </ol>
+
+    <div class="grid grid-3" style="margin-bottom:18px">
+        <div class="card stat">
+            <div class="stat-label">Candidates</div>
+            <div class="stat-value" th:text="${candidates.size()}">0</div>
+        </div>
+        <div class="card stat">
+            <div class="stat-label">Votes cast</div>
+            <div class="stat-value" th:text="${votes}">0</div>
+            <div class="stat-note">of <span th:text="${approvedVoters}">0</span> approved voters</div>
+        </div>
+        <div class="card stat">
+            <div class="stat-label">Turnout</div>
+            <div class="stat-value" th:text="${turnout} + '%'">0%</div>
+            <div class="progress"><span th:style="'width:' + ${turnout} + '%'"></span></div>
+        </div>
+    </div>
+
+    <!-- Counting and publication (after voting is stopped) -->
+    <div class="card" style="margin-bottom:18px" th:if="${tally != null}">
+        <div class="card-head">
+            <h2>Vote count</h2>
+            <span class="badge" th:classappend="${chainValid} ? 'badge-valid' : 'badge-invalid'"
+                  th:text="${chainValid} ? 'Blockchain verified' : 'Blockchain tampered'">Verified</span>
+        </div>
+        <div class="card-body">
+            <div class="alert alert-error" th:if="${!chainValid}">
+                Blockchain validation failed. The result cannot be published until the chain is intact.
+                <a th:href="@{/admin/blockchain}">Inspect the blocks</a>
+            </div>
+            <div th:replace="~{fragments :: tally(${tally})}"></div>
+        </div>
+        <div class="card-foot" th:if="${election.closed}">
+            <form th:action="@{/admin/elections/{id}/publish(id=${election.id})}" method="post"
+                  onsubmit="return confirm('Publish this result to all voters? This cannot be undone.');">
+                <button class="btn btn-primary" type="submit" th:disabled="${!chainValid}">Verify and publish result</button>
+                <a class="btn btn-secondary" th:href="@{/admin/blockchain}">View blockchain</a>
+            </form>
+        </div>
+    </div>
+
+    <div class="alert alert-info" th:if="${election.active}">
+        Voting is in progress. Votes stay encrypted on the blockchain and are counted only after you stop the election.
+    </div>
+
+    <div class="split">
+        <div class="card">
+            <div class="card-head"><h2>Candidates</h2></div>
+            <div class="empty" th:if="${candidates.isEmpty()}">No candidates yet. Add at least two to start the election.</div>
+            <div class="table-wrap" th:unless="${candidates.isEmpty()}">
+                <table>
+                    <thead><tr><th>Candidate</th><th>Manifesto</th><th th:if="${election.draft}"></th></tr></thead>
+                    <tbody>
+                    <tr th:each="c : ${candidates}">
+                        <td>
+                            <div class="person">
+                                <span class="avatar" th:text="${c.initials}">AB</span>
+                                <div><strong th:text="${c.name}">Name</strong><div class="muted small" th:text="${c.party}">Party</div></div>
+                            </div>
+                        </td>
+                        <td class="small" th:text="${c.manifesto} ?: '—'"></td>
+                        <td class="right" th:if="${election.draft}">
+                            <form class="inline-form" th:action="@{/admin/candidates/{id}/delete(id=${c.id})}" method="post"
+                                  onsubmit="return confirm('Remove this candidate?');">
+                                <button class="btn btn-outline-danger btn-sm" type="submit">Remove</button>
+                            </form>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="card" th:if="${election.draft}">
+            <div class="card-head"><h2>Add candidate</h2></div>
+            <div class="card-body">
+                <form th:action="@{/admin/elections/{id}/candidates(id=${election.id})}" method="post">
+                    <div class="field">
+                        <label for="name">Candidate name</label>
+                        <input type="text" id="name" name="name" maxlength="100" required>
+                    </div>
+                    <div class="field">
+                        <label for="party">Party / group</label>
+                        <input type="text" id="party" name="party" maxlength="100" required>
+                    </div>
+                    <div class="field">
+                        <label for="manifesto">Manifesto (optional)</label>
+                        <textarea id="manifesto" name="manifesto" maxlength="500"></textarea>
+                    </div>
+                    <button class="btn btn-primary btn-block" type="submit">Add candidate</button>
+                </form>
+            </div>
+        </div>
+        <div class="card" th:unless="${election.draft}">
+            <div class="card-body muted small">
+                The candidate list is locked because the election has started.
+            </div>
+        </div>
+    </div>
+</main>
+</body>
+</html>

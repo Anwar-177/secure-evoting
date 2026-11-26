@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<!-- Split-screen layout used by the login and registration pages -->
+<html lang="en" xmlns:th="http://www.thymeleaf.org" th:fragment="page(title, content)">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title th:text="${title} + ' | SecureVote'">SecureVote</title>
+    <link rel="stylesheet" th:href="@{/css/app.css}">
+</head>
+<body>
+<div class="auth-shell">
+    <aside class="auth-side">
+        <a class="brand" th:href="@{/}">
+            <svg viewBox="0 0 32 32" fill="none" aria-hidden="true">
+                <rect width="32" height="32" rx="8" fill="#2f5bea"/>
+                <path d="M9 16.5l4.5 4.5L23 11.5" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            SecureVote
+        </a>
+        <div class="auth-side-body">
+            <h2>Your vote. Verified, encrypted and sealed on the blockchain.</h2>
+            <ul class="auth-points">
+                <li>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="9" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.500 2 8 6"/></svg>
+                    <span><strong>Face biometric login</strong>Only the registered voter can open the ballot.</span>
+                </li>
+                <li>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>
+                    <span><strong>AES-256 encrypted ballot</strong>Nobody can read your choice from the ledger.</span>
+                </li>
+                <li>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="8" width="7" height="8" rx="2"/><rect x="14" y="8" width="7" height="8" rx="2"/><path d="M10 12h4"/></svg>
+                    <span><strong>Tamper-proof record</strong>Every vote is a block linked by SHA-256 hashes.</span>
+                </li>
+            </ul>
+        </div>
+        <a class="auth-back" th:href="@{/}">&larr; Back to home</a>
+    </aside>
+
+    <main th:replace="${content}"></main>
+</div>
+</body>
+</html>

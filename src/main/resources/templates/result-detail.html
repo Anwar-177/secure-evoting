@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: page(${election.title} + ' Result', ~{::main})}">
+<body>
+<main class="container container-narrow">
+    <div class="breadcrumb"><a th:href="@{/results}">Results</a> / <span th:text="${election.title}">Election</span></div>
+    <div class="page-head">
+        <div>
+            <h1 th:text="${election.title}">Election</h1>
+            <p th:text="'Result published on ' + ${#temporals.format(election.publishedAt, 'dd MMM yyyy, HH:mm')}"></p>
+        </div>
+        <span class="badge" th:classappend="${chainValid} ? 'badge-valid' : 'badge-invalid'"
+              th:text="${chainValid} ? 'Blockchain verified' : 'Blockchain check failed'">Verified</span>
+    </div>
+
+    <div class="alert alert-error" th:if="${!chainValid}">
+        The blockchain currently fails validation. This result may have been affected by tampering after publication.
+    </div>
+
+    <div class="alert alert-success" th:if="${tally.totalVotes > 0 and !tally.tie}">
+        Winner: <strong th:text="${tally.winners()[0].candidate.name}">Name</strong>
+        (<span th:text="${tally.winners()[0].candidate.party}">Party</span>)
+        with <span th:text="${tally.winners()[0].votes}">0</span> vote(s).
+    </div>
+    <div class="alert alert-warning" th:if="${tally.tie}">The election ended in a tie between the leading candidates.</div>
+    <div class="alert alert-info" th:if="${tally.totalVotes == 0}">No votes were cast in this election.</div>
+
+    <div class="card">
+        <div class="card-head"><h2>Candidate-wise result</h2></div>
+        <div class="card-body">
+            <div th:replace="~{fragments :: tally(${tally})}"></div>
+        </div>
+        <div class="card-foot">
+            <a class="btn btn-secondary" th:href="@{/audit}">Audit the public ledger</a>
+        </div>
+    </div>
+</main>
+</body>
+</html>

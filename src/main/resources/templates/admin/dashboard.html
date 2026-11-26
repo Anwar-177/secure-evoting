@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: page('Admin Dashboard', ~{::main})}">
+<body>
+<main class="container">
+    <div class="page-head">
+        <div>
+            <h1>Admin dashboard</h1>
+            <p>Election status and statistics at a glance.</p>
+        </div>
+        <div class="page-actions">
+            <a class="btn btn-primary" th:href="@{/admin/elections}">Create election</a>
+        </div>
+    </div>
+    <div th:replace="~{fragments :: alerts}"></div>
+
+    <div class="alert alert-warning" th:if="${pendingVoters > 0}">
+        <span th:text="${pendingVoters}">0</span> voter registration(s) waiting for verification.
+        <a th:href="@{/admin/voters}">Review now</a>
+    </div>
+
+    <div class="grid grid-4">
+        <div class="card stat">
+            <div class="stat-label">Registered voters</div>
+            <div class="stat-value" th:text="${totalVoters}">0</div>
+            <div class="stat-note"><span th:text="${approvedVoters}">0</span> approved &middot; <span th:text="${pendingVoters}">0</span> pending</div>
+        </div>
+        <div class="card stat">
+            <div class="stat-label">Elections</div>
+            <div class="stat-value" th:text="${totalElections}">0</div>
+            <div class="stat-note"><span th:text="${activeElections}">0</span> currently active</div>
+        </div>
+        <div class="card stat">
+            <div class="stat-label">Votes cast</div>
+            <div class="stat-value" th:text="${totalVotes}">0</div>
+            <div class="stat-note"><span th:text="${totalBlocks}">0</span> blocks on the chain</div>
+        </div>
+        <div class="card stat" th:classappend="${chainValid} ? 'stat-ok' : 'stat-bad'">
+            <div class="stat-label">Blockchain integrity</div>
+            <div class="stat-value" th:text="${chainValid} ? 'Valid' : 'Tampered'">Valid</div>
+            <div class="stat-note"><a th:href="@{/admin/blockchain}">Verify blocks</a></div>
+        </div>
+    </div>
+
+    <div class="card" style="margin-top:18px">
+        <div class="card-head">
+            <h2>Elections</h2>
+            <a class="small" th:href="@{/admin/elections}">Manage all</a>
+        </div>
+        <div class="empty" th:if="${rows.isEmpty()}">No elections yet. Create the first one to get started.</div>
+        <div class="table-wrap" th:unless="${rows.isEmpty()}">
+            <table>
+                <thead>
+                <tr><th>Election</th><th>Status</th><th class="num">Candidates</th><th class="num">Votes</th><th style="width:22%">Turnout</th><th></th></tr>
+                </thead>
+                <tbody>
+                <tr th:each="r : ${rows}">
+                    <td><strong th:text="${r.election.title}">Title</strong></td>
+                    <td><span class="badge" th:classappend="'badge-' + ${r.election.status.name().toLowerCase()}" th:text="${r.election.status}">DRAFT</span></td>
+                    <td class="num" th:text="${r.candidates}">0</td>
+                    <td class="num" th:text="${r.votes}">0</td>
+                    <td>
+                        <div class="progress"><span th:style="'width:' + ${r.turnout} + '%'"></span></div>
+                        <span class="muted small" th:text="${r.turnout} + '% of approved voters'">0%</span>
+                    </td>
+                    <td class="right"><a class="btn btn-secondary btn-sm" th:href="@{/admin/elections/{id}(id=${r.election.id})}">Manage</a></td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</main>
+</body>
+</html>

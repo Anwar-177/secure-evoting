@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      th:replace="~{layout :: page('Secure Blockchain E-Voting', ~{::main})}">
+<body>
+<main class="landing">
+
+    <!-- Hero -->
+    <section class="hero">
+        <div class="hero-inner">
+            <div>
+                <span class="eyebrow">Blockchain + biometric authentication</span>
+                <h1>Elections you can verify, not just trust.</h1>
+                <p class="lead">SecureVote confirms every voter by face biometrics, encrypts every ballot and seals it
+                    in a tamper-proof blockchain that anyone can audit.</p>
+                <div class="hero-actions" sec:authorize="isAnonymous()">
+                    <a class="btn btn-light btn-lg" th:href="@{/voter/register}">Register to vote</a>
+                    <a class="btn btn-ghost-light btn-lg" th:href="@{/voter/login}">Log in</a>
+                </div>
+                <div class="hero-actions" sec:authorize="hasRole('VOTER')">
+                    <a class="btn btn-light btn-lg" th:href="@{/voter/dashboard}">Go to my dashboard</a>
+                </div>
+                <div class="hero-actions" sec:authorize="hasRole('ADMIN')">
+                    <a class="btn btn-light btn-lg" th:href="@{/admin/dashboard}">Open admin dashboard</a>
+                </div>
+                <ul class="hero-trust">
+                    <li>SHA-256 hashing</li>
+                    <li>AES-256-GCM encryption</li>
+                    <li>Proof of work</li>
+                </ul>
+            </div>
+
+            <div class="hero-panel">
+                <div class="hero-panel-head">
+                    <span>Live ledger</span>
+                    <span class="live-dot">Online</span>
+                </div>
+                <div class="hero-stats">
+                    <div><b th:text="${voterCount}">0</b><span>Registered voters</span></div>
+                    <div><b th:text="${electionCount}">0</b><span>Elections</span></div>
+                    <div><b th:text="${voteCount}">0</b><span>Votes on chain</span></div>
+                </div>
+                <div class="chain-art" aria-hidden="true">
+                    <div><small>Genesis</small>000b77…</div><i></i>
+                    <div><small>Vote block</small>000685…</div><i></i>
+                    <div><small>Vote block</small>00047d…</div>
+                </div>
+                <a class="hero-panel-link" th:href="@{/audit}">Explore the public ledger &rarr;</a>
+            </div>
+        </div>
+    </section>
+
+    <div class="container">
+        <div th:replace="~{fragments :: alerts}"></div>
+        <div class="alert alert-info" th:if="${param.logout}">You have been logged out.</div>
+
+        <!-- Open elections -->
+        <section class="section" style="margin-top:0" th:if="${!activeElections.isEmpty()}">
+            <div class="section-head">
+                <h2>Voting is open now</h2>
+                <p>Log in and verify your identity to cast your vote.</p>
+            </div>
+            <div class="grid grid-3">
+                <div class="card" th:each="e : ${activeElections}">
+                    <div class="card-body">
+                        <span class="badge badge-active">Active</span>
+                        <h3 style="margin:10px 0 6px;font-size:1.1rem" th:text="${e.title}">Election</h3>
+                        <p class="muted small" th:text="${e.description}"></p>
+                        <a class="btn btn-primary btn-sm" th:href="@{/voter/dashboard}">Vote now</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Features -->
+        <section class="section" id="features">
+            <div class="section-head">
+                <h2>Built for trust at every step</h2>
+                <p>From registration to the final count, each stage is protected and open to verification.</p>
+            </div>
+            <div class="feature-grid">
+                <div class="card feature">
+                    <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8V6a2 2 0 0 1 2-2h2M16 4h2a2 2 0 0 1 2 2v2M20 16v2a2 2 0 0 1-2 2h-2M8 20H6a2 2 0 0 1-2-2v-2"/><circle cx="12" cy="10" r="3"/><path d="M7.500 17c1-2 2.500-3 4.500-3s3.500 1 4.500 3"/></svg></div>
+                    <h3>Biometric authentication</h3>
+                    <p>A live face capture is matched against the voter's registered template before the ballot opens.</p>
+                </div>
+                <div class="card feature">
+                    <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg></div>
+                    <h3>Encrypted ballots</h3>
+                    <p>Each vote is encrypted with AES-256 and tagged with a keyed hash, so the choice stays secret.</p>
+                </div>
+                <div class="card feature">
+                    <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="8" width="7" height="8" rx="2"/><rect x="14" y="8" width="7" height="8" rx="2"/><path d="M10 12h4"/></svg></div>
+                    <h3>Tamper-proof ledger</h3>
+                    <p>Votes are mined into blocks linked by SHA-256 hashes. Changing one block breaks the chain.</p>
+                </div>
+                <div class="card feature">
+                    <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M8 12.500l3 3 5-6"/></svg></div>
+                    <h3>One voter, one vote</h3>
+                    <p>An anonymous voter token on the chain blocks any second vote in the same election.</p>
+                </div>
+                <div class="card feature">
+                    <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="6"/><path d="M20 20l-4.500-4.500"/></svg></div>
+                    <h3>Public audit</h3>
+                    <p>Every voter gets a transaction ID and can confirm their vote on the public ledger.</p>
+                </div>
+                <div class="card feature">
+                    <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 20V10M12 20V4M19 20v-7"/></svg></div>
+                    <h3>Verified results</h3>
+                    <p>The chain is validated before counting, and results are published only if it is intact.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- How it works -->
+        <section class="section" id="how">
+            <div class="section-head">
+                <h2>How it works</h2>
+                <p>Four steps from registration to an auditable result.</p>
+            </div>
+            <ol class="timeline">
+                <li><span>1</span><h3>Register</h3><p>Enter your details and capture your face. The election authority approves your registration.</p></li>
+                <li><span>2</span><h3>Verify identity</h3><p>Before voting, your live face is compared with your stored biometric template.</p></li>
+                <li><span>3</span><h3>Cast your vote</h3><p>Your choice is encrypted, hashed and mined into a new block on the chain.</p></li>
+                <li><span>4</span><h3>Audit the result</h3><p>Check your receipt on the public ledger and view the verified result.</p></li>
+            </ol>
+        </section>
+
+        <!-- Roles -->
+        <section class="section">
+            <div class="grid grid-2">
+                <div class="card role-card">
+                    <span class="eyebrow eyebrow-dark">For voters</span>
+                    <h3>Vote from anywhere, with proof</h3>
+                    <ul class="check-list">
+                        <li>Register once with your face biometric</li>
+                        <li>Vote securely in any open election</li>
+                        <li>Keep a receipt you can verify yourself</li>
+                    </ul>
+                    <div class="hero-actions">
+                        <a class="btn btn-primary" th:href="@{/voter/register}">Register as a voter</a>
+                        <a class="btn btn-secondary" th:href="@{/voter/login}">Voter login</a>
+                    </div>
+                </div>
+                <div class="card role-card">
+                    <span class="eyebrow eyebrow-dark">For the election authority</span>
+                    <h3>Run the whole election in one place</h3>
+                    <ul class="check-list">
+                        <li>Create elections and manage candidates</li>
+                        <li>Verify voters, start and stop voting</li>
+                        <li>Validate the blockchain and publish results</li>
+                    </ul>
+                    <div class="hero-actions">
+                        <a class="btn btn-primary" th:href="@{/admin/login}">Admin login</a>
+                        <a class="btn btn-secondary" th:href="@{/results}">View results</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Call to action -->
+    <section class="cta" sec:authorize="isAnonymous()">
+        <div>
+            <h2>Ready to make your vote count?</h2>
+            <p>Registration takes about two minutes.</p>
+            <a class="btn btn-light btn-lg" th:href="@{/voter/register}">Register to vote</a>
+        </div>
+    </section>
+</main>
+</body>
+</html>

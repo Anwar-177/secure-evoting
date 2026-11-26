@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: page('Vote Receipt', ~{::main})}">
+<body>
+<main class="container container-narrow">
+    <div th:replace="~{fragments :: alerts}"></div>
+    <div class="card">
+        <div class="receipt-ok">
+            <div class="tick">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>
+            </div>
+            <h1>Vote confirmed</h1>
+            <p class="muted">Your vote for <strong th:text="${election.title}">Election</strong> is sealed in the blockchain.</p>
+        </div>
+        <div class="card-body">
+            <dl class="kv">
+                <dt>Voter ID</dt><dd><code class="hash" th:text="${voter.voterCode}">VTR</code></dd>
+                <dt>Recorded at</dt><dd th:text="${#temporals.format(block.time, 'dd MMM yyyy, HH:mm:ss')}">time</dd>
+                <dt>Block number</dt><dd th:text="'#' + ${block.blockIndex}">#1</dd>
+                <dt>Transaction ID</dt><dd><code class="hash" th:text="${block.blockHash}">hash</code></dd>
+                <dt>Previous block hash</dt><dd><code class="hash" th:text="${block.previousHash}">hash</code></dd>
+                <dt>Vote hash</dt><dd><code class="hash" th:text="${block.voteHash}">hash</code></dd>
+                <dt>Encrypted vote</dt><dd><code class="hash" th:text="${block.encryptedVote}">cipher</code></dd>
+            </dl>
+            <p class="muted small" style="margin:16px 0 0">
+                For ballot secrecy this receipt does not show the candidate you selected.
+                Use the transaction ID to confirm your vote is on the public ledger.
+            </p>
+        </div>
+        <div class="card-foot no-print" style="display:flex;gap:10px;flex-wrap:wrap">
+            <a class="btn btn-primary" th:href="@{/audit(tx=${block.blockHash})}">Verify on public ledger</a>
+            <button class="btn btn-secondary" type="button" onclick="window.print()">Print receipt</button>
+            <a class="btn btn-secondary" th:href="@{/voter/dashboard}">Back to dashboard</a>
+        </div>
+    </div>
+</main>
+</body>
+</html>

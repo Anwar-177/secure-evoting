@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: page('Ballot', ~{::main})}">
+<body>
+<main class="container container-narrow">
+    <div class="breadcrumb"><a th:href="@{/voter/dashboard}">My Dashboard</a> / Ballot</div>
+    <div class="page-head">
+        <div>
+            <h1 th:text="${election.title}">Election</h1>
+            <p>Select one candidate. Your vote is final and cannot be changed after it is submitted.</p>
+        </div>
+    </div>
+    <div th:replace="~{fragments :: alerts}"></div>
+
+    <form th:action="@{/voter/vote}" method="post"
+          onsubmit="return confirm('Submit your vote? This cannot be changed afterwards.');">
+        <input type="hidden" name="electionId" th:value="${election.id}">
+        <div class="ballot" role="radiogroup" aria-label="Candidates">
+            <label class="ballot-option" th:each="c : ${candidates}">
+                <input type="radio" name="candidateId" th:value="${c.id}" required>
+                <span class="ballot-card">
+                    <span class="avatar avatar-lg" th:text="${c.initials}">AB</span>
+                    <span>
+                        <strong style="font-size:1.05rem" th:text="${c.name}">Name</strong>
+                        <p th:text="${c.party}">Party</p>
+                        <p th:if="${c.manifesto}" th:text="${c.manifesto}"></p>
+                    </span>
+                    <span class="mark" aria-hidden="true"></span>
+                </span>
+            </label>
+        </div>
+        <div style="margin-top:20px;display:flex;gap:10px;flex-wrap:wrap">
+            <button class="btn btn-primary btn-lg" type="submit">Cast my vote</button>
+            <a class="btn btn-secondary btn-lg" th:href="@{/voter/dashboard}">Cancel</a>
+        </div>
+    </form>
+    <p class="muted small" style="margin-top:14px">
+        Your choice is encrypted with AES-256 before it is stored. Only an anonymous token, not your identity, is written to the blockchain.
+    </p>
+</main>
+</body>
+</html>

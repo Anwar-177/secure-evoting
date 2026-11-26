@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: page('Registration Complete', ~{::main})}">
+<body>
+<main class="container container-narrow">
+    <div class="card">
+        <div class="receipt-ok">
+            <div class="tick">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>
+            </div>
+            <h1>Registration submitted</h1>
+            <p class="muted">Your details and biometric template have been stored.</p>
+        </div>
+        <div class="card-body">
+            <dl class="kv">
+                <dt>Voter ID</dt><dd><code class="hash" th:text="${voter.voterCode}">VTR</code></dd>
+                <dt>Name</dt><dd th:text="${voter.fullName}">Name</dd>
+                <dt>Login email</dt><dd th:text="${voter.email}">email</dd>
+                <dt>Biometrics</dt><dd>Face<span th:if="${voter.fingerprintRegistered}"> + Fingerprint</span></dd>
+                <dt>Status</dt><dd><span class="badge badge-pending">Pending verification</span></dd>
+            </dl>
+            <div class="alert alert-info" style="margin:18px 0 0">
+                You can log in now. You will be able to vote once the election authority approves your registration.
+            </div>
+        </div>
+        <div class="card-foot">
+            <a class="btn btn-primary" th:href="@{/voter/login}">Go to login</a>
+        </div>
+    </div>
+</main>
+</body>
+</html>

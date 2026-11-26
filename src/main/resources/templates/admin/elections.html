@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: page('Elections', ~{::main})}">
+<body>
+<main class="container">
+    <div class="page-head">
+        <div>
+            <h1>Elections</h1>
+            <p>Create an election, add candidates, then start and stop voting.</p>
+        </div>
+    </div>
+    <div th:replace="~{fragments :: alerts}"></div>
+
+    <div class="split">
+        <div class="card">
+            <div class="card-head"><h2>All elections</h2></div>
+            <div class="empty" th:if="${rows.isEmpty()}">No elections yet.</div>
+            <div class="table-wrap" th:unless="${rows.isEmpty()}">
+                <table>
+                    <thead>
+                    <tr><th>Election</th><th>Status</th><th class="num">Candidates</th><th class="num">Votes</th><th></th></tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="r : ${rows}">
+                        <td>
+                            <strong th:text="${r.election.title}">Title</strong>
+                            <div class="muted small" th:text="'Created ' + ${#temporals.format(r.election.createdAt, 'dd MMM yyyy')}"></div>
+                        </td>
+                        <td><span class="badge" th:classappend="'badge-' + ${r.election.status.name().toLowerCase()}" th:text="${r.election.status}">DRAFT</span></td>
+                        <td class="num" th:text="${r.candidates}">0</td>
+                        <td class="num" th:text="${r.votes}">0</td>
+                        <td class="right"><a class="btn btn-secondary btn-sm" th:href="@{/admin/elections/{id}(id=${r.election.id})}">Manage</a></td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-head"><h2>Create election</h2></div>
+            <div class="card-body">
+                <form th:action="@{/admin/elections}" method="post">
+                    <div class="field">
+                        <label for="title">Title</label>
+                        <input type="text" id="title" name="title" maxlength="150" placeholder="e.g. Student Council Election 2026" required>
+                    </div>
+                    <div class="field">
+                        <label for="description">Description</label>
+                        <textarea id="description" name="description" maxlength="1000" placeholder="What is this election for?"></textarea>
+                    </div>
+                    <button class="btn btn-primary btn-block" type="submit">Create election</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</main>
+</body>
+</html>

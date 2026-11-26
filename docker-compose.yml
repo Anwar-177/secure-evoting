@@ -1,0 +1,53 @@
+# SecureVote - application + MySQL database
+#
+#   Start:   docker compose up --build -d
+#   Open:    http://localhost:8085
+#   Logs:    docker compose logs -f app
+#   Stop:    docker compose down          (add -v to also delete the database)
+#
+# Values written as ${NAME:-default} can be overridden in a .env file (see .env.example).
+
+services:
+
+  db:
+    image: mysql:8.4
+    container_name: securevote-db
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: evoting
+      MYSQL_USER: evoting
+      MYSQL_PASSWORD: ${DB_PASSWORD:-evoting123}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-root123}
+    ports:
+      - "${DB_PORT:-3385}:3306"      # host port 3385, so it does not clash with a local MySQL
+    volumes:
+      - db-data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -uroot -p$$MYSQL_ROOT_PASSWORD --silent"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 20s
+
+  app:
+    build: .
+    image: securevote-app:1.0.0
+    container_name: securevote-app
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      SPRING_PROFILES_ACTIVE: mysql
+      SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/evoting?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Kolkata
+      SPRING_DATASOURCE_USERNAME: evoting
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD:-evoting123}
+      EVOTING_ADMIN_USERNAME: ${ADMIN_USERNAME:-admin}
+      EVOTING_ADMIN_PASSWORD: ${ADMIN_PASSWORD:-admin123}
+      EVOTING_SECURITY_SECRET: ${SECURITY_SECRET:-change-this-secret-key-for-your-election-2026}
+      TZ: Asia/Kolkata
+    ports:
+      - "${APP_PORT:-8085}:8085"
+
+volumes:
+  db-data:

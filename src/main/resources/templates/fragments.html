@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<!-- Success / error messages set by the controllers -->
+<div th:fragment="alerts">
+    <div class="alert alert-success" role="status" th:if="${success}" th:text="${success}"></div>
+    <div class="alert alert-error" role="alert" th:if="${error}" th:text="${error}"></div>
+</div>
+
+<!-- Candidate-wise result bars -->
+<div th:fragment="tally(tally)">
+    <div class="result-row" th:each="r : ${tally.results}">
+        <div class="result-top">
+            <div class="person">
+                <span class="avatar" th:text="${r.candidate.initials}">AB</span>
+                <div>
+                    <strong th:text="${r.candidate.name}">Name</strong>
+                    <span class="winner-tag" th:if="${r.winner}" th:text="${tally.tie} ? 'Tied' : 'Winner'">Winner</span>
+                    <div class="muted small" th:text="${r.candidate.party}">Party</div>
+                </div>
+            </div>
+            <div class="result-count">
+                <span th:text="${r.votes}">0</span> <span class="muted small" th:text="${r.votes == 1} ? 'vote' : 'votes'">votes</span>
+                &middot; <span th:text="${r.percent} + '%'">0%</span>
+            </div>
+        </div>
+        <div class="progress" th:classappend="${r.winner} ? 'win'">
+            <span th:style="'width:' + ${r.percent} + '%'"></span>
+        </div>
+    </div>
+    <p class="muted small" style="margin:14px 0 0">
+        Total valid votes: <strong th:text="${tally.totalVotes}">0</strong>
+        <span th:if="${tally.invalidVotes > 0}"> &middot; Rejected (failed verification):
+            <strong th:text="${tally.invalidVotes}">0</strong></span>
+    </p>
+</div>
+
+<!-- Blockchain ledger table. admin = true adds the tampering demo actions -->
+<div th:fragment="ledger(report, electionTitles, admin)" class="table-wrap">
+    <table>
+        <thead>
+        <tr>
+            <th>Block</th>
+            <th>Time</th>
+            <th>Election</th>
+            <th>Encrypted vote</th>
+            <th>Previous hash</th>
+            <th>Block hash (transaction ID)</th>
+            <th class="num">Nonce</th>
+            <th>Status</th>
+            <th th:if="${admin}"></th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="c : ${report.checks}" th:classappend="${!c.valid()} ? 'row-bad'">
+            <td><strong th:text="'#' + ${c.block.blockIndex}">#0</strong></td>
+            <td class="small" style="white-space:nowrap" th:text="${#temporals.format(c.block.time, 'dd MMM yyyy, HH:mm:ss')}"></td>
+            <td th:if="${c.block.genesis}" class="muted">Genesis block</td>
+            <td th:unless="${c.block.genesis}" th:text="${electionTitles[c.block.electionId]} ?: 'Election ' + ${c.block.electionId}"></td>
+            <td><code class="hash hash-short" th:if="${c.block.encryptedVote}" th:title="${c.block.encryptedVote}" th:text="${c.block.encryptedVote}"></code></td>
+            <td><code class="hash hash-short" th:title="${c.block.previousHash}" th:text="${c.block.previousHash}"></code></td>
+            <td><code class="hash hash-short" th:title="${c.block.blockHash}" th:text="${c.block.blockHash}"></code></td>
+            <td class="num" th:text="${c.block.nonce}">0</td>
+            <td>
+                <span class="badge badge-valid" th:if="${c.valid()}">Valid</span>
+                <span class="badge badge-invalid" th:unless="${c.valid()}" th:title="${c.problem()}">Invalid</span>
+                <div class="small" th:unless="${c.valid()}" th:text="${c.problem()}"></div>
+            </td>
+            <td th:if="${admin}">
+                <div class="cell-actions" th:unless="${c.block.genesis}">
+                    <form th:if="${!c.block.tampered}" th:action="@{/admin/blockchain/{id}/tamper(id=${c.block.id})}" method="post">
+                        <button class="btn btn-outline-danger btn-sm" type="submit">Simulate tampering</button>
+                    </form>
+                    <form th:if="${c.block.tampered}" th:action="@{/admin/blockchain/{id}/restore(id=${c.block.id})}" method="post">
+                        <button class="btn btn-secondary btn-sm" type="submit">Restore</button>
+                    </form>
+                </div>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+
+<!-- Face capture panel. storeImage = true also submits the photo (registration) -->
+<div th:fragment="faceCapture(storeImage)" class="face-capture" id="faceCapture" th:attr="data-models=@{/vendor/face-api/model}">
+    <div class="face-stage">
+        <video id="faceVideo" muted playsinline hidden></video>
+        <img id="facePreview" alt="Captured face photo" hidden>
+        <div class="face-placeholder" id="facePlaceholder">Camera preview will appear here</div>
+    </div>
+    <div>
+        <div class="face-actions">
+            <button type="button" class="btn btn-secondary" id="btnCamera">Start camera</button>
+            <button type="button" class="btn btn-primary" id="btnCapture" disabled>Capture</button>
+            <label class="btn btn-secondary">Upload photo
+                <input type="file" id="faceFile" accept="image/*" hidden>
+            </label>
+        </div>
+        <p class="face-status" id="faceStatus" role="status">Start the camera or upload a clear, front-facing photo.</p>
+        <input type="hidden" name="faceImage" id="faceImage" th:if="${storeImage}">
+        <input type="hidden" name="faceDescriptor" id="faceDescriptor">
+    </div>
+</div>
+
+</body>
+</html>

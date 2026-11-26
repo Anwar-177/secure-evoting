@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: page('Blockchain Verification', ~{::main})}">
+<body>
+<main class="container">
+    <div class="page-head">
+        <div>
+            <h1>Blockchain verification</h1>
+            <p>Every block's SHA-256 hash, link to the previous block and proof of work are re-checked each time this page loads.</p>
+        </div>
+        <div class="page-actions">
+            <a class="btn btn-secondary" th:href="@{/admin/blockchain}">Re-validate chain</a>
+        </div>
+    </div>
+    <div th:replace="~{fragments :: alerts}"></div>
+
+    <div class="grid grid-4" style="margin-bottom:18px">
+        <div class="card stat" th:classappend="${report.valid} ? 'stat-ok' : 'stat-bad'">
+            <div class="stat-label">Chain status</div>
+            <div class="stat-value" th:text="${report.valid} ? 'Valid' : 'Tampered'">Valid</div>
+        </div>
+        <div class="card stat">
+            <div class="stat-label">Blocks</div>
+            <div class="stat-value" th:text="${report.checks.size()}">0</div>
+            <div class="stat-note">including the genesis block</div>
+        </div>
+        <div class="card stat" th:classappend="${report.invalidCount > 0} ? 'stat-bad'">
+            <div class="stat-label">Invalid blocks</div>
+            <div class="stat-value" th:text="${report.invalidCount}">0</div>
+        </div>
+        <div class="card stat">
+            <div class="stat-label">Mining difficulty</div>
+            <div class="stat-value" th:text="${difficulty}">3</div>
+            <div class="stat-note">leading zeros in each hash</div>
+        </div>
+    </div>
+
+    <div class="alert alert-error" th:if="${!report.valid}">
+        Tampering detected. Results cannot be published while the chain is invalid.
+    </div>
+
+    <div class="card">
+        <div class="card-head">
+            <h2>Ledger</h2>
+            <span class="muted small">"Simulate tampering" edits a block directly in the database to demonstrate detection.</span>
+        </div>
+        <div th:replace="~{fragments :: ledger(${report}, ${electionTitles}, true)}"></div>
+    </div>
+</main>
+</body>
+</html>

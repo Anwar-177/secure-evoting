@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: page('Election Results', ~{::main})}">
+<body>
+<main class="container">
+    <div class="page-head">
+        <div>
+            <h1>Election results</h1>
+            <p>Results appear here after the election authority has verified the blockchain and published them.</p>
+        </div>
+    </div>
+
+    <div class="card empty" th:if="${elections.isEmpty()}">No results have been published yet.</div>
+    <div class="grid grid-3">
+        <div class="card" th:each="e : ${elections}">
+            <div class="card-body">
+                <span class="badge badge-published">Published</span>
+                <h3 style="margin:10px 0 6px;font-size:1.1rem" th:text="${e.title}">Election</h3>
+                <p class="muted small" th:text="'Published ' + ${#temporals.format(e.publishedAt, 'dd MMM yyyy, HH:mm')}"></p>
+                <a class="btn btn-primary btn-sm" th:href="@{/results/{id}(id=${e.id})}">View result</a>
+            </div>
+        </div>
+    </div>
+</main>
+</body>
+</html>

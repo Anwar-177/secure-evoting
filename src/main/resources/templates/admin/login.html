@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" th:replace="~{auth-layout :: page('Admin Login', ~{::main})}">
+<body>
+<main class="auth-main">
+    <div class="auth-box">
+        <div class="role-tabs" role="tablist" aria-label="Login type">
+            <a role="tab" aria-selected="false" th:href="@{/voter/login}">Voter</a>
+            <a class="active" role="tab" aria-selected="true" th:href="@{/admin/login}">Admin</a>
+        </div>
+
+        <h1>Election authority</h1>
+        <p class="auth-sub">Authorized administrators only.</p>
+
+        <div class="alert alert-error" role="alert" th:if="${param.error}">Incorrect username or password.</div>
+
+        <form th:action="@{/admin/login}" method="post">
+            <div class="field">
+                <label for="username">Username</label>
+                <input type="text" id="username" name="username" autocomplete="username" required autofocus>
+            </div>
+            <div class="field">
+                <label for="password">Password</label>
+                <div class="input-group">
+                    <input type="password" id="password" name="password" autocomplete="current-password" required>
+                    <button type="button" class="input-addon" data-toggle-password="password" aria-label="Show password">Show</button>
+                </div>
+            </div>
+            <button class="btn btn-primary btn-block btn-lg" type="submit">Log in</button>
+        </form>
+
+        <p class="auth-foot">Are you a voter? <a th:href="@{/voter/login}">Voter login</a></p>
+    </div>
+    <script th:src="@{/js/auth.js}"></script>
+</main>
+</body>
+</html>

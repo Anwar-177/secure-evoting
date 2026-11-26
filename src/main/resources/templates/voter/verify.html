@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" th:replace="~{layout :: page('Biometric Verification', ~{::main})}">
+<body>
+<main class="container container-narrow">
+    <div class="breadcrumb"><a th:href="@{/voter/dashboard}">My Dashboard</a> / <span th:text="${election.title}">Election</span></div>
+    <div class="page-head">
+        <div>
+            <h1>Biometric verification</h1>
+            <p>Confirm your identity before the ballot for <strong th:text="${election.title}">Election</strong> opens.</p>
+        </div>
+    </div>
+    <div th:replace="~{fragments :: alerts}"></div>
+
+    <form class="card" th:action="@{/voter/verify}" method="post" enctype="multipart/form-data">
+        <input type="hidden" name="electionId" th:value="${election.id}">
+        <div class="card-body">
+            <div class="section-title">Step 1 &middot; Face verification</div>
+            <div th:replace="~{fragments :: faceCapture(false)}"></div>
+
+            <div th:if="${voter.fingerprintRegistered}">
+                <div class="section-title" style="margin-top:22px">Step 2 &middot; Fingerprint (optional second factor)</div>
+                <div class="field">
+                    <label for="fingerprint">Registered fingerprint image</label>
+                    <input type="file" id="fingerprint" name="fingerprint" accept="image/*">
+                    <div class="hint">If provided, it must match the fingerprint you registered.</div>
+                </div>
+            </div>
+        </div>
+        <div class="card-foot">
+            <button class="btn btn-primary btn-lg" type="submit" data-face-submit disabled>Verify my identity</button>
+            <a class="btn btn-secondary btn-lg" th:href="@{/voter/dashboard}">Cancel</a>
+        </div>
+    </form>
+    <p class="muted small" style="margin-top:14px">
+        Your live face is compared with the biometric template stored at registration. Access to the ballot is denied if it does not match.
+    </p>
+
+    <script th:src="@{/vendor/face-api/face-api.js}"></script>
+    <script th:src="@{/js/face.js}"></script>
+</main>
+</body>
+</html>

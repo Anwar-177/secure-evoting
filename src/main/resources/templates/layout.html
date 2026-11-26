@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      th:fragment="page(title, content)">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title th:text="${title} + ' | SecureVote'">SecureVote</title>
+    <link rel="stylesheet" th:href="@{/css/app.css}">
+</head>
+<body>
+
+<header class="topbar">
+    <div class="topbar-inner">
+        <a class="brand" th:href="@{/}">
+            <svg viewBox="0 0 32 32" fill="none" aria-hidden="true">
+                <rect width="32" height="32" rx="8" fill="#2f5bea"/>
+                <path d="M9 16.5l4.5 4.5L23 11.5" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            SecureVote
+        </a>
+
+        <nav class="nav" sec:authorize="hasRole('ADMIN')">
+            <a th:href="@{/admin/dashboard}">Dashboard</a>
+            <a th:href="@{/admin/elections}">Elections</a>
+            <a th:href="@{/admin/voters}">Voters</a>
+            <a th:href="@{/admin/blockchain}">Blockchain</a>
+            <a th:href="@{/results}">Results</a>
+        </nav>
+        <nav class="nav" sec:authorize="hasRole('VOTER')">
+            <a th:href="@{/voter/dashboard}">My Dashboard</a>
+            <a th:href="@{/results}">Results</a>
+            <a th:href="@{/audit}">Public Ledger</a>
+        </nav>
+        <nav class="nav" sec:authorize="isAnonymous()">
+            <a th:href="@{/}">Home</a>
+            <a th:href="@{/results}">Results</a>
+            <a th:href="@{/audit}">Public Ledger</a>
+        </nav>
+
+        <div class="nav-end" sec:authorize="hasRole('ADMIN')">
+            <span class="role-chip">Admin</span>
+            <form th:action="@{/admin/logout}" method="post">
+                <button class="btn btn-ghost-light btn-sm" type="submit">Log out</button>
+            </form>
+        </div>
+        <div class="nav-end" sec:authorize="hasRole('VOTER')">
+            <span class="role-chip">Voter</span>
+            <form th:action="@{/voter/logout}" method="post">
+                <button class="btn btn-ghost-light btn-sm" type="submit">Log out</button>
+            </form>
+        </div>
+        <div class="nav-end" sec:authorize="isAnonymous()">
+            <a class="btn btn-ghost-light btn-sm" th:href="@{/admin/login}">Admin</a>
+            <a class="btn btn-ghost-light btn-sm" th:href="@{/voter/login}">Voter Login</a>
+            <a class="btn btn-light btn-sm" th:href="@{/voter/register}">Register</a>
+        </div>
+    </div>
+</header>
+
+<main th:replace="${content}"></main>
+
+<footer class="footer">
+    <div>
+        <span>SecureVote &middot; Secure Blockchain E-Voting System with Biometric Authentication</span>
+        <span>SHA-256 &middot; AES-256-GCM &middot; Private Java Blockchain</span>
+    </div>
+</footer>
+
+</body>
+</html>
